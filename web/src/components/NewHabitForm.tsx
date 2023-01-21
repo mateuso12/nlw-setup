@@ -1,6 +1,8 @@
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { Check } from "phosphor-react";
 import { FormEvent, useState } from 'react';
+import { toast } from 'react-toastify';
+import { api } from '../lib/axios';
 
 const availableWeekDays = [
   'Domingo',
@@ -16,8 +18,40 @@ export function NewHabitForm() {
   const [title, setTitle] = useState('');
   const [weekDays, setWeekDays] = useState<number[]>([]);
 
-  function createNewHabit(event: FormEvent) {
+  async function createNewHabit(event: FormEvent) {
     event.preventDefault()
+
+    if (!title || weekDays.length === 0) {
+      toast.error('É necessário preencher o campo e selecionar pelo menos uma recorrência!', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        });
+    }
+
+    await api.post('habits', {
+      title,
+      weekDays,
+    })
+
+    setTitle('')
+    setWeekDays([]);
+
+    toast.success('Hábito criado com sucesso!', {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
   }
 
   function handleToggleWeekDay(weekDay: number) {
@@ -44,6 +78,7 @@ export function NewHabitForm() {
         placeholder="ex.: Exercícios, dormir bem, etc..."
         className="p-4 roudend-lg mt-3 bg-zinc-800 text-white placeholder:text-zinc-400"
         autoFocus
+        value={title}
         onChange={event => setTitle(event.target.value)}
       />
 
@@ -56,6 +91,7 @@ export function NewHabitForm() {
           <Checkbox.Root
             key={weekDay} 
             className="flex items-center gap-3 group"
+            checked={weekDays.includes(index)}
             onCheckedChange={() => handleToggleWeekDay(index)}
           >
             <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-zinc-900 border-2 border-zinc-800 group-data-[state=checked]:bg-green-500 group-data-[state=checked]:border-green-500 transition-all" >
